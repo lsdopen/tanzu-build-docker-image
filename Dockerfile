@@ -11,6 +11,8 @@ RUN set -x \
     && rm -rf /var/cache/apt/archives /var/lib/apt/lists
 RUN set -x \
     && groupadd -g "$GID" "$GROUP" \
-    && useradd -u "$UID" -d "$WORKDIR" -g "$GID" "$USER"
+    && useradd -u "$UID" -d "$WORKDIR" -g "$GID" -G docker "$USER"
 USER "$USER"
 WORKDIR "$WORKDIR"
+
+
