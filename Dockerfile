@@ -3,6 +3,7 @@ ARG USER=lsd
 ARG UID=1000
 ARG GROUP=lsd
 ARG GID=1000
+ARG DOCKER_GID=118
 ARG WORKDIR="/home/lsd"
 
 RUN set -x \
@@ -11,7 +12,7 @@ RUN set -x \
     && rm -rf /var/cache/apt/archives /var/lib/apt/lists
 RUN set -x \
     && groupadd -g "$GID" "$GROUP" \
-    && useradd -u "$UID" -d "$WORKDIR" -g "$GID" -G docker,root "$USER"
+    && useradd -u "$UID" -d "$WORKDIR" -g "$GID" -G "$DOCKER_GID",root "$USER"
 USER "$USER"
 WORKDIR "$WORKDIR"
 
