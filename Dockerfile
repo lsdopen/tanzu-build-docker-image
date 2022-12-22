@@ -57,15 +57,15 @@ RUN set -eux; \
     chmod +x /usr/local/bin/helm && \
     rm -rf linux-${ARCH}
 
-COPY tanzu-cli-bundle-linux-amd64.tar.gz tanzu-cli-bundle-linux-amd64.tar.gz
-
 # Install Tanzu CLI and Carvel Tools
 ARG YTT_VERSION="ytt-linux-amd64-v0.41.1+vmware.1"
 ARG KAPP_VERSION="kapp-linux-amd64-v0.49.0+vmware.1"
 ARG KBLD_VERSION="kbld-linux-amd64-v0.34.0+vmware.1"
 ARG IMGPKG_VERSION="imgpkg-linux-amd64-v0.29.0+vmware.1"
-ARG VENDIR_VERSION="imgpkg-linux-amd64-v0.29.0+vmware.1"
+ARG VENDIR_VERSION="vendir-linux-amd64-v0.27.0+vmware.1"
+ARG TKG_TOOL_VERSION="TKG-160"
 RUN set -eux; \
+    curl -Lo tanzu-cli-bundle-linux-amd64.tar.gz https://download3.vmware.com/software/${TKG_TOOL_VERSION}/tanzu-cli-bundle-linux-amd64.tar.gz; \
     tar -xzf tanzu-cli-bundle-linux-amd64.tar.gz; \
     install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu; \
     gunzip cli/${YTT_VERSION}.gz; \
