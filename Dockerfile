@@ -1,23 +1,17 @@
-FROM docker:20.10.22-dind
+FROM ubuntu:22.10
 
-# ARG USER=lsd
-# ARG UID=1000
-# ARG GROUP=lsd
-# ARG WORKDIR="/home/lsd"
+ARG USER=lsd
+ARG UID=1000
+ARG GROUP=lsd
+ARG GID=1000
+ARG WORKDIR="/home/lsd"
 
-# WORKDIR ${WORKDIR}
-
-# RUN set -eux; \
-#     adduser -h ${WORKDIR} -D -u ${UID} ${USER} ${GROUP}; \
-#     echo "${USER}:200000:65536" > /etc/subuid; \
-#     echo "${USER}:200000:65536" > /etc/subgid; \
-#     chown ${USER}:${GROUP} -R ${WORKDIR}
-
-# tanzu cli
+# Base stuff
 RUN set -eux; \
-    apk add --no-cache \
-    btrfs-progs e2fsprogs e2fsprogs-extra ip6tables iptables openssl \
-    shadow-uidmap xfsprogs xz pigz curl git bash perl-utils
+    apt-get -yqq update
+RUN set -eux; \
+    apt-get -yqq install \
+    iptables openssl pigz curl git bash nocache unzip
 
 # Install Terraform
 ARG TERRAFORM_VERSION="1.3.6"
@@ -88,48 +82,16 @@ RUN set -eux; \
     cd ..; \
     rm -rf cli; rm tanzu-cli-bundle-linux-amd64.tar.gz
 
-# Install rootless kit
-# RUN set -eux; \
-#     \
-#     apkArch="$(apk --print-arch)"; \
-#     case "$apkArch" in \
-#     'x86_64') \
-#     url='https://download.docker.com/linux/static/stable/x86_64/docker-rootless-extras-20.10.22.tgz'; \
-#     ;; \
-#     'aarch64') \
-#     url='https://download.docker.com/linux/static/stable/aarch64/docker-rootless-extras-20.10.22.tgz'; \
-#     ;; \
-#     *) echo >&2 "error: unsupported 'rootless.tgz' architecture ($apkArch)"; exit 1 ;; \
-#     esac; \
-#     \
-#     wget -O 'rootless.tgz' "$url"; \
-#     \
-#     tar --extract \
-#     --file rootless.tgz \
-#     --strip-components 1 \
-#     --directory /usr/local/bin/ \
-#     'docker-rootless-extras/rootlesskit' \
-#     'docker-rootless-extras/rootlesskit-docker-proxy' \
-#     'docker-rootless-extras/vpnkit' \
-#     ; \
-#     rm rootless.tgz; \
-#     \
-#     rootlesskit --version; \
-#     vpnkit --version
+# Install docker
+RUN set -eux; \
+    curl -fsSL https://get.docker.com | sh
 
-# RUN set -eux; \
-#     mkdir -p /home/${USER}/.docker/run; \
-#     chown -R ${USER}:${GROUP} /home/${USER}/.docker/run
+RUN set -eux; \
+    groupadd -g ${GID} ${GROUP}; \
+    useradd -d ${WORKDIR} -G ${GROUP} -u ${UID} -g docker ${USER}; \
+    mkdir -p ${WORKDIR}; \
+    chown ${USER}:${GROUP} -R ${WORKDIR}
 
-# ENV XDG_RUNTIME_DIR=/home/${USER}/.docker/run
+WORKDIR ${WORKDIR}
 
-# # pre-create "/var/lib/docker" for our  user
-# RUN set -eux; \
-#     mkdir -p /home/${USER}/.local/share/docker; \
-#     chown -R ${USER}:${GROUP} /home/${USER}/.local/share/docker
-
-# USER ${USER}
-
-ENTRYPOINT []
-
-CMD ["dockerd-entrypoint.sh"]
+USER ${USER}
