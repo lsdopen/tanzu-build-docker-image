@@ -130,6 +130,8 @@ RUN set -eux; \
 
 VOLUME /var/lib/docker
 
+RUN mv /root/bin/* /usr/local/bin
+
 # USER ${USER}
 
-# ENTRYPOINT [ "bin/dockerd-rootless.sh" ]
+ENTRYPOINT [ "dockerd-rootless.sh" ]
