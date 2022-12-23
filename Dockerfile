@@ -128,10 +128,8 @@ RUN set -eux; \
 #     mkdir -p /home/${USER}/.local/share/docker; \
 #     chown -R ${USER}:${GROUP} /home/${USER}/.local/share/docker
 
-VOLUME /var/lib/docker
-
-RUN mv /root/bin/* /usr/local/bin
-
 # USER ${USER}
 
-ENTRYPOINT [ "dockerd-rootless.sh" ]
+ENTRYPOINT []
+
+CMD ["dockerd-entrypoint.sh"]
