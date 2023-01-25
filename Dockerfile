@@ -11,7 +11,7 @@ RUN set -eux; \
     apt-get -yqq update
 RUN set -eux; \
     apt-get -yqq install \
-    iptables openssl pigz curl git bash nocache unzip
+    iptables openssl pigz curl git bash nocache unzip dnsutils ntpdate
 
 # Install Terraform
 ARG TERRAFORM_VERSION="1.3.6"
