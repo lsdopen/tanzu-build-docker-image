@@ -22,17 +22,42 @@ RUN set -eux; \
     chmod +x ./terraform; \
     mv ./terraform /usr/local/bin/terraform 
 
+# Install Tanzu CLI, Tanzu Kubectl and Carvel Tools
+ARG KUBECTL_VERSION="kubectl-linux-v1.23.8+vmware.2"
+ARG YTT_VERSION="ytt-linux-amd64-v0.41.1+vmware.1"
+ARG KAPP_VERSION="kapp-linux-amd64-v0.49.0+vmware.1"
+ARG KBLD_VERSION="kbld-linux-amd64-v0.34.0+vmware.1"
+ARG IMGPKG_VERSION="imgpkg-linux-amd64-v0.29.0+vmware.1"
+ARG VENDIR_VERSION="vendir-linux-amd64-v0.27.0+vmware.1"
+ARG TKG_TOOL_VERSION="TKG-160"
+
+RUN set -eux \
+    && curl -Lo tanzu-cli-bundle-linux-amd64.tar.gz https://download3.vmware.com/software/${TKG_TOOL_VERSION}/tanzu-cli-bundle-linux-amd64.tar.gz \
+    && curl -Lo kubectl-linux-v1.23.8+vmware.2.gz https://download3.vmware.com/software/${TKG_TOOL_VERSION}/${KUBECTL_VERSION}.gz \
+    && tar -xzf tanzu-cli-bundle-linux-amd64.tar.gz \
+    && gunzip ${KUBECTL_VERSION}.gz  \
+    && install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu \
+    && install ${KUBECTL_VERSION} /usr/local/bin/kubectl
+RUN set -eux \
+    && gunzip cli/${YTT_VERSION}.gz \
+    && gunzip cli/${KAPP_VERSION}.gz \
+    && gunzip cli/${KBLD_VERSION}.gz \
+    && gunzip cli/${IMGPKG_VERSION}.gz \
+    && gunzip cli/${VENDIR_VERSION}.gz \
+    && install cli/${YTT_VERSION} /usr/local/bin/ytt \
+    && install cli/${KAPP_VERSION} /usr/local/bin/kapp \
+    && install cli/${IMGPKG_VERSION} /usr/local/bin/imgpkg \
+    && install cli/${VENDIR_VERSION} /usr/local/bin/vendir \
+    && tanzu plugin sync \
+    && rm -rf cli \
+    && rm tanzu-cli-bundle-linux-amd64.tar.gz \
+    && rm ${KUBECTL_VERSION}
+
 # Install Kind
 RUN set -eux; \
     curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.17.0/kind-linux-amd64; \
     chmod +x ./kind; \
     mv ./kind /usr/local/bin/kind
-
-# Install Kubectl
-RUN set -eux; \
-    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"; \
-    curl -LO "https://dl.k8s.io/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"; \
-    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 # Install Helm
 ARG BASE_URL="https://get.helm.sh"
@@ -51,36 +76,15 @@ RUN set -eux; \
     chmod +x /usr/local/bin/helm && \
     rm -rf linux-${ARCH}
 
-# Install Tanzu CLI and Carvel Tools
-ARG YTT_VERSION="ytt-linux-amd64-v0.41.1+vmware.1"
-ARG KAPP_VERSION="kapp-linux-amd64-v0.49.0+vmware.1"
-ARG KBLD_VERSION="kbld-linux-amd64-v0.34.0+vmware.1"
-ARG IMGPKG_VERSION="imgpkg-linux-amd64-v0.29.0+vmware.1"
-ARG VENDIR_VERSION="vendir-linux-amd64-v0.27.0+vmware.1"
-ARG TKG_TOOL_VERSION="TKG-160"
-RUN set -eux; \
-    curl -Lo tanzu-cli-bundle-linux-amd64.tar.gz https://download3.vmware.com/software/${TKG_TOOL_VERSION}/tanzu-cli-bundle-linux-amd64.tar.gz; \
-    tar -xzf tanzu-cli-bundle-linux-amd64.tar.gz; \
-    install cli/core/v0.25.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu; \
-    gunzip cli/${YTT_VERSION}.gz; \
-    chmod ugo+x cli/${YTT_VERSION}; \
-    mv cli/${YTT_VERSION} /usr/local/bin/ytt; \
-    gunzip cli/${KAPP_VERSION}.gz; \
-    chmod ugo+x cli/${KAPP_VERSION}; \
-    mv cli/${KAPP_VERSION} /usr/local/bin/kapp; \
-    gunzip cli/${KBLD_VERSION}.gz; \
-    chmod ugo+x cli/${KBLD_VERSION}; \
-    mv cli/${KBLD_VERSION} /usr/local/bin/kapp; \
-    gunzip cli/${IMGPKG_VERSION}.gz; \
-    chmod ugo+x cli/${IMGPKG_VERSION}; \
-    mv cli/${IMGPKG_VERSION} /usr/local/bin/kapp; \
-    gunzip cli/${VENDIR_VERSION}.gz; \
-    chmod ugo+x cli/${VENDIR_VERSION}; \
-    mv cli/${VENDIR_VERSION} /usr/local/bin/kapp; \
-    cd cli; \
-    tanzu plugin sync; \
-    cd ..; \
-    rm -rf cli; rm tanzu-cli-bundle-linux-amd64.tar.gz
+# Install kubectx and kubens
+ARG KUBEBINS_VERSION="v0.9.4"
+RUN set -eux \
+    && curl -Lo kubectx https://github.com/ahmetb/kubectx/releases/download/${KUBEBINS_VERSION}/kubectx \
+    && curl -Lo kubens https://github.com/ahmetb/kubectx/releases/download/${KUBEBINS_VERSION}/kubens \
+    && install kubectx /usr/local/bin/kubectx \
+    && install kubens /usr/local/bin/kubens \
+    && rm kubectx \
+    && rm kubens
 
 # Install docker
 RUN set -eux; \
